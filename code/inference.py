@@ -56,26 +56,17 @@ def main(args):
             if(word_ids[j] != prev_word_id):
                 # new word
                 if(res.val != "" and res.type != "O"):
-                    results[i] = res
-                    # print(res.val, res.type)
-                    # res.set_val("")
-                    # res.set_type("")
-                    # res = r.Result()
+                    results.setdefault(i, []).append(res) # create a key if it does not exist and append
                     
                 res = r.Result()
                 prev_word_id = word_ids[j]
-                # print("\n",tokens[i], end='')
                 res.set_val(tokens[j])
                 res.set_type(tok_cls)
             else:
                 # in the word
                 if(word_ids[j] != None):
-                    # print(tokens[i].replace('#',''),end='')
                     res.append_val(tokens[j].replace('#',''))
         
-    # for result in results:
-    #     print(result.val, result.type)
-    # print(results)
     
     #print the results
     print("Mezery u vstupniho textu nesedi, protoze v datasetu jsou jednotliva slova a dal mezeru po kazdem")
@@ -88,8 +79,15 @@ def main(args):
         print("")
         print("Rozpoznane entity: ")
         if i in results:
-            print(results[i].val, results[i].type)
-                # print(f"{res.val} - {res.type}")
+            for res in results[i]:
+                print(res.val, res.type)
+                
+        print("")
+        print("Entity co tam mely byt: ")
+        for j in range(len(dataset["test"][i]["tokens"])):
+            if(dataset["test"][i]["ner_tags"][j] != 0):
+                print(model.config.id2label[dataset["test"][i]["ner_tags"][j]], dataset["test"][i]["tokens"][j])
+                
                 
         print("\n")
     
