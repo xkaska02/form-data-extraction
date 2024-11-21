@@ -80,7 +80,7 @@ def main(args):
         print("Rozpoznane entity: ")
         if i in results:
             for res in results[i]:
-                print(res.val, res.type)
+                print(res.type, res.val)
                 
         print("")
         print("Entity co tam mely byt: ")
