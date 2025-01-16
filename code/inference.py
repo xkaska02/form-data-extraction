@@ -4,7 +4,8 @@ import argparse
 from transformers import BertForTokenClassification, BertTokenizerFast
 from create_dataset import create_dataset
 import torch
-import result as r
+# import result as r
+from result import Result
 
 def parse_args():
     parser = argparse.ArgumentParser()
@@ -28,7 +29,7 @@ def main(args):
     tokenized_inputs = []
     SAMPLE_COUNT = 10
     # print(len(dataset["test"]))
-    results = {}
+    results : dict[str, Result] = {}
     
     for i in range(SAMPLE_COUNT):
         tokenized_inputs.append(tokenizer(dataset["test"][i]["tokens"], return_tensors="pt", is_split_into_words=True))
@@ -48,17 +49,19 @@ def main(args):
     
     
         word_ids = tokenized_inputs[i].word_ids(0)
-        res = r.Result()
+        res = Result()
     
         prev_word_id = None
             
         for j, tok_cls in enumerate(predicted_token_class):
             if(word_ids[j] != prev_word_id):
                 # new word
-                if(res.val != "" and res.type != "O"):
-                    results.setdefault(i, []).append(res) # create a key if it does not exist and append
+                # if(res.val != "" and res.type != "O"):
+                if(res.val != ""):
+                    # results.setdefault(i, {}).setdefault(res.val, res) # create a key if it does not exist and append
+                    results.setdefault(i, []).append(res)
                     
-                res = r.Result()
+                res = Result()
                 prev_word_id = word_ids[j]
                 res.set_val(tokens[j])
                 res.set_type(tok_cls)
@@ -69,28 +72,55 @@ def main(args):
         
     
     #print the results
-    print("Mezery u vstupniho textu nesedi, protoze v datasetu jsou jednotliva slova a dal mezeru po kazdem")
-    for i in range(SAMPLE_COUNT):
-        print("Vstupni text: ", end='')
+    in_category = False
+    for r in results:
+        # print(results[r])
+        for i in range(len(results[r])):
+            print(results[r][i].val, end='')
+            if i+1 < len(results[r]):
+                if(results[r][i+1].type != 'O' and not in_category):
+                    # print("dalsi slovo ma kategorii")
+                    in_category = True
+                    print("<span style='color:blue;'>", end=' ')
+                    
+                    # print(results[r][i+1].val)
+                elif(results[r][i+1].type == 'O' and in_category):
+                    # print("konec stejne kategorie slova vypis nazvu kategorie")
+                    print(f"</span><sub>{results[r][i].type}</sub>", end=' ')
+                    in_category = False
+                if(results[r][i+1].val != '.' and results[r][i+1].val != ',' and results[r][i+1].val != '-' and results[r][i].val != '-' and results[r][i+1].val != '?' and results[r][i+1].val != '"' and results[r][i].val != '"' ):
+                    print(' ',end='')
+        print("<br><br>")
+    # for i in range(SAMPLE_COUNT):
+    #     # print("Vstupni text: ", end='')
         
-        for tok in dataset["test"][i]["tokens"]:
-            print(tok, end=' ')
+    #     for tok in dataset["test"][i]["tokens"]:
+    #         if i in results:
+    #             if tok in results[i]:
+    #                 print(f'<span style="color:blue;">{tok} </span>')
+    #                 # print(results[i][tok].type)
+    #                 print(f"<sub>{results[i][tok].type}</sub>")
+    #             else:
+    #                 print(tok, end=' ')            
+    #             # if tok in results[i]:
+    #             #     print(results[i][tok].type)
         
-        print("")
-        print("Rozpoznane entity: ")
-        if i in results:
-            for res in results[i]:
-                print(res.type, res.val)
+    #     print("")
+    #     # print("Rozpoznane entity: ")
+    #     # if i in results:
+    #     #     for res in results[i]:
+    #     #         print(res.type, res.val)
                 
-        print("")
-        print("Entity co tam mely byt: ")
-        for j in range(len(dataset["test"][i]["tokens"])):
-            if(dataset["test"][i]["ner_tags"][j] != 0):
-                print(model.config.id2label[dataset["test"][i]["ner_tags"][j]], dataset["test"][i]["tokens"][j])
+    #     print("")
+    #     print("Entity co tam mely byt: ")
+    #     print("<ul>")
+    #     for j in range(len(dataset["test"][i]["tokens"])):
+    #         if(dataset["test"][i]["ner_tags"][j] != 0):
+    #             print(f'<li>{model.config.id2label[dataset["test"][i]["ner_tags"][j]]}, {dataset["test"][i]["tokens"][j]}</li>')
+    #     print("</ul>")
                 
-                
-        print("\n")
-    
+    #     print("\n")
+    #print(results)
 if __name__ == "__main__":
     args = parse_args()
     main(args)
