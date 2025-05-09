@@ -30,6 +30,8 @@ python3 $SCRIPT_DIR/train_lilt.py \
     --loss_on_subtokens False \
     --experiment_name lilt_backbones
 
+rm -r $SAVE_DIR/*
+
 python3 $SCRIPT_DIR/train_lilt.py \
     --save_path $SAVE_DIR \
     --model_path xkaska02/lilt-robeczech-base \
@@ -46,3 +48,5 @@ python3 $SCRIPT_DIR/train_lilt.py \
     --classifier_head_layers 1 \
     --loss_on_subtokens False \
     --experiment_name lilt_backbones
+
+rm -r $SAVE_DIR/*

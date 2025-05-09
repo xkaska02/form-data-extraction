@@ -30,6 +30,8 @@ python3 $SCRIPT_DIR/train_lilt.py \
     --loss_on_subtokens False \
     --experiment_name loss_on_subtokens_lilt
 
+rm -r $SAVE_DIR/*
+
 python3 $SCRIPT_DIR/train_lilt.py \
     --save_path $SAVE_DIR \
     --model_path $MODEL \
@@ -46,3 +48,5 @@ python3 $SCRIPT_DIR/train_lilt.py \
     --classifier_head_layers 1 \
     --loss_on_subtokens True \
     --experiment_name loss_on_subtokens_lilt
+
+rm -r $SAVE_DIR/*

@@ -29,6 +29,8 @@ python3 $SCRIPT_DIR/train_lilt.py \
     --classifier_head_layers 1 \
     --experiment_name train_dataset_size_lilt
 
+rm -r $SAVE_DIR/*
+
 python3 $SCRIPT_DIR/train_lilt.py \
     --save_path $SAVE_DIR \
     --model_path $MODEL \
@@ -44,6 +46,8 @@ python3 $SCRIPT_DIR/train_lilt.py \
     --save_strat epoch \
     --classifier_head_layers 1 \
     --experiment_name train_dataset_size_lilt
+
+rm -r $SAVE_DIR/*
 
 python3 $SCRIPT_DIR/train_lilt.py \
     --save_path $SAVE_DIR \
@@ -61,7 +65,7 @@ python3 $SCRIPT_DIR/train_lilt.py \
     --classifier_head_layers 1 \
     --experiment_name train_dataset_size_lilt
 
-# rm $SAVE_DIR/*
+rm -r $SAVE_DIR/*
 
 python3 $SCRIPT_DIR/train_lilt.py \
     --save_path $SAVE_DIR \
@@ -79,6 +83,8 @@ python3 $SCRIPT_DIR/train_lilt.py \
     --classifier_head_layers 1 \
     --experiment_name train_dataset_size_lilt
 
+rm -r $SAVE_DIR/*
+
 python3 $SCRIPT_DIR/train_lilt.py \
     --save_path $SAVE_DIR \
     --model_path $MODEL \
@@ -94,3 +100,5 @@ python3 $SCRIPT_DIR/train_lilt.py \
     --save_strat epoch \
     --classifier_head_layers 1 \
     --experiment_name train_dataset_size_lilt
+
+rm -r $SAVE_DIR/*
