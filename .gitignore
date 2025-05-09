@@ -3,5 +3,5 @@ __pycache__
 data_files
 venv
 .env
-wandb
+wandb/
 out/
