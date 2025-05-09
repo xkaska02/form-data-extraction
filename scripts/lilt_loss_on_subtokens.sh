@@ -1,6 +1,8 @@
 #!/bin/bash
 
-BASE_DIR="/home/kaska/BP/form-data-extraction"
+# BASE_DIR="/home/kaska/BP/form-data-extraction"
+BASE_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+
 
 source $BASE_DIR/venv/bin/activate
 
