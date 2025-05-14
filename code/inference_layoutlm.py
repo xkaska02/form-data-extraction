@@ -1,11 +1,9 @@
 """inference of the model
 """
 import argparse
-# from transformers import BertForTokenClassification, BertTokenizerFast
 from transformers import LayoutLMv3ForTokenClassification, LayoutLMv3TokenizerFast, LayoutLMv3Processor
 from create_dataset import create_dataset
 import torch
-# import result as r
 from result import Result
 from datasets import load_dataset
 from PIL import Image, ImageDraw, ImageFont

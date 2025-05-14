@@ -128,9 +128,7 @@ def main(args):
     wandb.login(key=api_key)
     
     os.environ["WANDB_PROJECT"] = args.experiment_name
-    # os.environ["WANDB_LOG_MODEL"] = "checkpoint"
-    
-    # dataset = load_dataset("json", data_files={"train":"data_files/forms_json_dataset/train_split.json", "validation":"data_files/forms_json_dataset/validation_split.json", "test":"data_files/forms_json_dataset/test_split.json"})
+
     dataset = load_dataset("json", data_files={"train":args.train_file, "validation":args.validation_file, "test":args.test_file})
     
     
@@ -163,10 +161,6 @@ def main(args):
     max_len = 256
     def tokenize_and_align_labels(examples):
         tokenized_inputs = tokenizer(examples["words"], truncation=True, padding=True, is_split_into_words=True, max_length=max_len)
-        # tokenized_inputs = tokenizer(examples["words"], truncation=True, padding=True, is_split_into_words=True)
-        
-        # print(tokenized_inputs.word_ids(0))
-        # exit(0)
         all_labels = examples["ner_tags"]
         new_labels = []
         for i, labels, in enumerate(all_labels):
@@ -175,8 +169,7 @@ def main(args):
             
         tokenized_inputs["labels"] = new_labels
         return tokenized_inputs
-    # print(dataset)
-    # exit(0)
+
     tokenized_dataset = dataset.map(tokenize_and_align_labels, batched=True)
     data_collator = DataCollatorForTokenClassification(tokenizer=tokenizer)
     
@@ -271,7 +264,6 @@ def main(args):
     else:
         save_path = "models"
     output_name = generate_model_name(base=args.model_name, lr=args.lr, batch_size=args.batch_size, train_size=len(dataset["train"]), extra=f"")
-    # output_dir = generate_model_name(base="czert", lr=args.lr, batch_size=args.batch_size, train_size=len(dataset["train"]))
     
     
     training_args = TrainingArguments(
@@ -284,11 +276,10 @@ def main(args):
         weight_decay=args.decay,
         eval_strategy=args.eval_strat,
         save_strategy=args.save_strat,
-        # load_best_model_at_end=True,
+        load_best_model_at_end=True,
         optim="adamw_torch",
         report_to="wandb",
         metric_for_best_model="eval_loss"
-        # eval_accumulation_steps=1
    )
     
     early_stopping = EarlyStoppingCallback(early_stopping_patience=3, early_stopping_threshold=0.0001)
@@ -305,7 +296,6 @@ def main(args):
         callbacks=[early_stopping]
     )
 
-    # print("trenuju xd")
     trainer.train()
 
     test_metrics = trainer.evaluate(eval_dataset=tokenized_dataset["test"])

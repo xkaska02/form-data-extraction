@@ -32,26 +32,13 @@ def parse_args():
 
 
 def main(args):
-    # print(tokenized_inputs.tokens())
-    # label_list = ["O", "NUMBER_IN_ADDR", "GEOGRAPHICAL_NAME", "INSTITUTION", "MEDIA", "NUMBER_EXPRESSION", "ARTIFACT_NAME", "PERSONAL_NAME", "TIME_EXPRESSION"]
-    # label_list = args.label_list
-    # if args.train_file and args.test_file:
-    #     dataset = create_dataset({"train":args.train_file, "test":args.test_file}, label_list, file_type=args.file_type)
-    # # print(dataset["train"][0])
-    # elif args.train_folder and args.test_folder:
-    #     dataset = create_dataset({"train": f"{args.train_folder}/*.json","test": f"{args.test_folder}/*.json"},args.label_list, args.file_type, field="form")
-    
-    
-
     dataset = load_dataset("nielsr/funsd-iob-original")
     label_list = dataset["train"].features["ner_tags"].feature.names
     
     # removing unnecessary columns
     dataset = dataset.remove_columns(['image','bboxes','original_bboxes'])
     
-    
     tokenizer = BertTokenizerFast.from_pretrained(args.model_path)
-    
 
     def align_labels_with_tokens(labels, word_ids):
         new_labels = []
@@ -72,8 +59,6 @@ def main(args):
 
     def tokenize_and_align_labels(examples):
         tokenized_inputs = tokenizer(examples["words"], truncation=True, padding=True, is_split_into_words=True)
-        # print(tokenized_inputs.word_ids(0))
-        # exit(0)
         all_labels = examples["ner_tags"]
         new_labels = []
         for i, labels, in enumerate(all_labels):
@@ -147,7 +132,6 @@ def main(args):
         save_strategy=args.save_strat,
         load_best_model_at_end=True,
         optim="adamw_torch"
-        # eval_accumulation_steps=1
    )
     
     trainer = Trainer(
@@ -160,7 +144,6 @@ def main(args):
         compute_metrics=compute_metrics
     )
 
-    # print("trenuju xd")
     trainer.train()
 
 

@@ -23,14 +23,3 @@ def create_dataset(data_files, label_list, file_type, **kwargs):
         new_features["ner_tags"] = Sequence(feature=ClassLabel(names=label_list))
         dataset = dataset.cast(new_features)    
     return dataset
-
-# def main(args):
-#     data_files = {"train": args.train_file, "test": args.test_file}
-#     label_list = ["O", "NUMBER_IN_ADDR", "GEOGRAPHICAL_NAME", "INSTITUTION", "MEDIA", "NUMBER_EXPRESSION", "ARTIFACT_NAME", "PERSONAL_NAME", "TIME_EXPRESSION"]
-#     # dataset = create_dataset(data_files=data_files, label_list=label_list)
-    # print(dataset["train"][0])
-    
-
-# if __name__ == "__main__":
-#     args = parse_args()
-#     main(args)

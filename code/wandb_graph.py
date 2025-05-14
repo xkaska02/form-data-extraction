@@ -1,8 +1,9 @@
+# this file is very ugly as it was updated manually for every csv file
 import pandas as pd
 import matplotlib.pyplot as plt
 
 # # Load CSV
-# # csv_path = "wandb_export_2025-05-09T17_30_44.343+02_00.csv"  # Update this path as needed
+# # csv_path = "wandb_export_2025-05-09T17_30_44.343+02_00.csv" 
 # # csv_path = "lilt_roberta_trainsize.csv"
 # csv_paths = ["czert.csv", "lilt_xlmroberta.csv", "robeczech.csv", "xlm_roberta.csv"]
 # custom_labels = ["czert", "lilt_XLM-RoBERTa","robeczech", "XLM-RoBERTa"]

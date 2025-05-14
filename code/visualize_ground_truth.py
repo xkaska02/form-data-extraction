@@ -25,13 +25,11 @@ for i in range(SAMPLE_SIZE):
     img = Image.open(dataset["test"][i]["image_name"])
 
     draw = ImageDraw.Draw(img, "RGBA")
-    # print(len(dataset["test"][i]["ner_tags"]))
     
     for j in range(len(dataset["test"][i]["ner_tags"])):
         
         box = dataset["test"][i]["bboxes"][j]
         predicted_label = dataset["test"][i]["ner_tags"][j]
-        # print(predicted_label)
         if(predicted_label):
             draw.rectangle(box, fill=label2color_fill[predicted_label-1])
 

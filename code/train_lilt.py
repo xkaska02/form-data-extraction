@@ -145,8 +145,6 @@ def main(args):
   eval_dataset = CustomDataset(dataset["validation"], tokenizer)
   test_dataset = CustomDataset(dataset["test"], tokenizer)
 
-  # padding_collator = DataCollatorWithPadding(tokenizer=tokenizer, padding=True)
-
   def collate_fn(features):
     boxes = [feature["bbox"] for feature in features]
     labels = [feature["labels"] for feature in features]
@@ -155,11 +153,9 @@ def main(args):
     batch = tokenizer.pad(
       {"input_ids":input_ids}, 
       padding=True,
-      # max_length=128,
       return_tensors="pt"
     )
     
-    # batch = padding_collator(input_ids)
     
     
     sequence_length = batch["input_ids"].shape[1]
@@ -193,7 +189,6 @@ def main(args):
       predictions, labels = p
       predictions = np.argmax(predictions, axis=2)
 
-      # Remove ignored index (special tokens)
       true_predictions = [
           [label_list[p] for (p, l) in zip(prediction, label) if l != -100]
           for prediction, label in zip(predictions, labels)
@@ -255,7 +250,6 @@ def main(args):
         optim="adamw_torch",
         report_to="wandb",
         metric_for_best_model="eval_loss"
-        # eval_accumulation_steps=1
    )
   experiment_name = generate_model_name(base="lilt_xlmroberta", lr=training_args.learning_rate, batch_size=training_args.per_device_train_batch_size, train_size=len(dataset["train"]))
 
@@ -272,7 +266,6 @@ def main(args):
       return eval_dataloader
 
 
-  # Initialize our Trainer
   trainer = CustomTrainer(
       model=model,
       args=training_args,

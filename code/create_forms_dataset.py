@@ -51,14 +51,12 @@ for a in annotations:
     result_json["image_name"] = img_file
     
     for label in a['label']:
-        # print(label)
         if "closed" in label:
             for point in label['points']:
                 point[0] = round(point[0]/100*label['original_width'])
                 point[1] = round(point[1]/100*label['original_height'])
         else:
             convert_from_ls(label)
-        # print(label)
     try:
         tree = ET.parse(xml_file)
     except:
@@ -76,12 +74,8 @@ for a in annotations:
         for textline in textblock:
             for text in textline:
                 if "String" in text.tag:
-                    # print(int(text.attrib['VPOS']),int(text.attrib['HPOS']),int(text.attrib['VPOS'])+int(text.attrib['WIDTH']), int(text.attrib['HPOS'])+int(text.attrib['HEIGHT']))
-                    # print(text.attrib['CONTENT'],[int(text.attrib['VPOS']),int(text.attrib['HPOS']),int(text.attrib['VPOS'])+int(text.attrib['WIDTH']), int(text.attrib['HPOS'])+int(text.attrib['HEIGHT'])])
                     words.append(text)
     sorted_words = sorted(words, key=lambda word: (int(word.attrib['VPOS'])//30, int(word.attrib['HPOS'])))
-    # for word in sorted_words:
-    #     print(word.attrib['CONTENT'],[int(word.attrib['VPOS']),int(word.attrib['HPOS']),int(word.attrib['VPOS'])+int(word.attrib['WIDTH']), int(word.attrib['HPOS'])+int(word.attrib['HEIGHT'])])
             
     pero_polygons = []
     label_polygons = []
@@ -101,18 +95,13 @@ for a in annotations:
             intersection = p.shape.intersection(l.shape)
             union = p.shape.union(l.shape)
             iou = intersection.area / (union.area)
-            # print(f"union {union.area} intersection {intersection.area} iou {iou}\n")
             if iou > iou_max:
                 iou_max = iou
-                # res_poly = intersection
                 res_poly.shape = intersection
                 res_poly.iou = iou
                 res_poly.category = l.category
                 res_poly.text = p.text
-                # print(iou)
         if res_poly.iou > 0.09:
-            # print("res: ", res_poly.area)
-            # print("IOUMAX",iou_max)
             result_polygons.append(res_poly)                    
 
     
@@ -146,7 +135,7 @@ for a in annotations:
     
     json_object = json.dumps(results)
     
-    with open("data_files/forms_json_dataset/dataset.json","w") as file:
+    with open("data_files/forms_json_dataset/dataset_without_keys.json","w") as file:
         file.write(json_object)
 
     

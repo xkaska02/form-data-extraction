@@ -22,15 +22,11 @@ def main(args):
     
     model_id = args.model_path
     tokenizer = AutoTokenizer.from_pretrained(model_id, add_prefix_space=True)
-    # tokenizer = RobertaTokenizerFast.from_pretrained(model_id, add_prefix_space=True)
-    # feature_extractor = LayoutLMv3FeatureExtractor().from_pretrained("microsoft/layoutlmv3-base")
-
 
     model = AutoModelForTokenClassification.from_pretrained(model_id)
 
     dataset = load_dataset("json", data_files={"train":"data_files/forms_json_dataset/train_split.json", "validation":"data_files/forms_json_dataset/validation_split.json", "test":"data_files/forms_json_dataset/test_split.json"})
 
-    # print(dataset["test"][0])
     if args.sample_count:
         SAMPLE_COUNT = int(args.sample_count)
     else:
@@ -45,9 +41,7 @@ def main(args):
         boxes = dataset["test"][i]["bboxes"]
         image_path = dataset["test"][i]["image_name"]
 
-
         normalized_boxes = [normalize_box(b, image.width, image.height) for b in boxes]
-        # image_features = feature_extractor(images=image, return_tensors="pt")
 
         encoding = tokenizer(
             words,
@@ -59,12 +53,7 @@ def main(args):
         )
 
         encoding['bbox'] = torch.tensor([normalized_boxes + [[0, 0, 0, 0]] * (512 - len(normalized_boxes))])  # pad to 512
-        # encoding['image'] = image_features['pixel_values']
         del encoding['offset_mapping']
-
-        # print(tokenizer.convert_ids_to_tokens(encoding["input_ids"][0]))
-        # exit(0)
-
 
         with torch.no_grad():
             outputs = model(**encoding)
@@ -73,14 +62,10 @@ def main(args):
 
 
         predicted_token_class = [model.config.id2label[t.item()] for t in predictions[0]]
-        # print(predicted_token_class)
-        # exit(0)
+
         tokenized_inputs = []
         tokenized_inputs.append(tokenizer(words, return_tensors="pt", is_split_into_words=True, padding="max_length",max_length=512))
         tokens = tokenizer.convert_ids_to_tokens(tokenized_inputs[0]["input_ids"][0])
-        # print(len(tokenized_words[0]["input_ids"][0]))
-        # print(tokenized_words[0].word_ids(0))
-        # print(tokens)
 
 
         word_ids = tokenized_inputs[0].word_ids(0)
@@ -90,13 +75,8 @@ def main(args):
 
         for j, tok_cls in enumerate(predicted_token_class):
                     if(word_ids[j] != prev_word_id):
-                        # new word
-                        # if(res.val != "" and res.type != "O"):
 
                         if(res.val != ""):
-                            # results.setdefault(i, {}).setdefault(res.val, res) # create a key if it does not exist and append
-                            # print("appenduju tohle", vars(res))
-                            # print(f"appenduju v j {j}")
                             res.set_bbox(dataset['test'][i]['bboxes'][word_ids[j-1]])
                             results.setdefault(i, []).append(res)
                             
@@ -105,24 +85,17 @@ def main(args):
                         prev_word_id = word_ids[j]
                         res.set_val(tokens[j].replace("▁","")) #! this symbol '▁'is not an underscore
                         res.set_type(tok_cls)
-                        # print(word_ids[j])
                         if word_ids[j]:
-                            # print(f"{word_ids[j]} {dataset['test'][i]['original_bboxes'][word_ids[j]]}")
-                            # print(f"j: {j}, word_ids[j]: {word_ids[j]}, j-1: {j-1}, word_ids[j-1]: {word_ids[j-1]}")
                             res.set_bbox(dataset['test'][i]['bboxes'][word_ids[j]])
-                            # print(f"res.bbox {res.bbox}")
                         
                     else:
                         # in the word
                         if(word_ids[j] != None):
                             res.append_val(tokens[j].replace('▁',''))
                             
-        # print(results)
         formatted_result = {"words":[], "bboxes":[], "ner_tags":[], "image_path":""}
         for r in results:
             for word in results[r]:
-                # formatted_results[r]
-                # print(word.__dict__)
                 formatted_result['words'].append(word.val)
                 formatted_result['ner_tags'].append(word.type)
                 formatted_result['bboxes'].append(word.bbox)
@@ -130,14 +103,12 @@ def main(args):
                 
             formatted_results.append(formatted_result)
             formatted_result = {"words":[], "bboxes":[], "ner_tags":[], "image_path":""}
-        # print(formatted_results)
 
         json_object = json.dumps(formatted_results, indent=4)
 
 
     model_name = model_id.split("/")[1]
     out_path = f"out/{model_name}.json"
-    # print(out_path)
 
     with open(out_path, "w") as outfile:
         outfile.write(json_object)

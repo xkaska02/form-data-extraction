@@ -8,7 +8,6 @@ with open('data_files/forms_json_dataset/dataset_without_keys.json', 'r') as fil
 
 label_list = ["B-name","B-rank","B-birth_date","B-nationality","B-death_date","B-funeral_date","B-grave_location","B-grave_id","B-information_source","B-death_book"]
 
-# print(dataset[0]["bboxes"])
 
 borders = [219, 358, 592, 727,944,1043,1240,1330,1535,1616]
 keys = ["Příjmení a jméno", "Hodnost a pluk", "Datum a narození polit. okres, země", "Příslušnost (polit. okres, země)", "Datum a místo úmrtí (polit. okres, země)", "Datum pohřbu", "Označení hřbitova a místo (polit. okres, země)", "Oddělení, číslo hrobu", "Opsáno podle", "Úmrtní kniha: tom, fol.", "Tiskárna MNO. - 1163 - 36."]

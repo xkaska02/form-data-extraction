@@ -34,12 +34,9 @@ def parse_args():
 
 
 def main(args):
-    # print(tokenized_inputs.tokens())
-    # label_list = ["O", "NUMBER_IN_ADDR", "GEOGRAPHICAL_NAME", "INSTITUTION", "MEDIA", "NUMBER_EXPRESSION", "ARTIFACT_NAME", "PERSONAL_NAME", "TIME_EXPRESSION"]
     label_list = args.label_list
     if args.train_file and args.test_file:
         dataset = create_dataset({"train":args.train_file, "test":args.test_file}, label_list, file_type=args.file_type)
-    # print(dataset["train"][0])
     elif args.train_folder and args.test_folder:
         dataset = create_dataset({"train": f"{args.train_folder}/*.json","test": f"{args.test_folder}"},args.label_list, args.file_type, field="form")
     
@@ -151,7 +148,6 @@ def main(args):
         compute_metrics=compute_metrics
     )
 
-    # print("trenuju xd")
     trainer.train()
 
 

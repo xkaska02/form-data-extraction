@@ -14,33 +14,6 @@ dataset = DatasetDict({
 
 
 
-# with open("data_files/forms_json_dataset/dataset_int_bboxes.json","r") as file:
-#     data = json.load(file)
-
-
-# remove labels for keys only leave labels for values    
-# new_list = []
-# for d in data:
-#     # print(d)
-#     new_tags = [tag if tag != 1 else 0 for tag in d["ner_tags"]]
-#     d["ner_tags"] = new_tags
-    
-# print(data[0]["ner_tags"])
-# one_form_list = []
-
-# example = data[0]
-# for i in range(500):
-#     example["id"] = i
-#     one_form_list.append(example)
-    
-# # print(one_form_list)
 dataset["train"].to_json("data_files/forms_json_dataset/train_split.json")
 dataset["test"].to_json("data_files/forms_json_dataset/test_split.json")
 dataset["validation"].to_json("data_files/forms_json_dataset/validation_split.json")
-
-# json_object = json.dumps(dataset["train"])
-
-# print(json_object)
-
-# with open("data_files/forms_json_dataset/dataset_without_keys.json","w") as outfile:
-#     outfile.write(json_object)
