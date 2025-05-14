@@ -13,8 +13,4 @@ source $VENV_DIR/bin/activate
 pip install --upgrade pip
 pip install -r requirements.txt
 
-chmod +x $BASE_DIR/scripts/run_lilt_experiments.sh
-chmod +x $BASE_DIR/scripts/lilt_train_dataset_size.sh
-chmod +x $BASE_DIR/scripts/lilt_loss_on_subtokens.sh
-chmod +x $BASE_DIR/scripts/lilt_classifier_layers.sh
-chmod +x $BASE_DIR/scripts/different_lilt_backbones.sh
+chmod +x $BASE_DIR/scripts/*
