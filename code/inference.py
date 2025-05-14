@@ -25,7 +25,7 @@ def main(args):
     
     
     label_list = ["O", "NUMBER_IN_ADDR", "GEOGRAPHICAL_NAME", "INSTITUTION", "MEDIA", "NUMBER_EXPRESSION", "ARTIFACT_NAME", "PERSONAL_NAME", "TIME_EXPRESSION"]
-    dataset = create_dataset({"train":args.train_file, "test":args.test_file}, label_list)
+    dataset = create_dataset({"train":args.train_file, "test":args.test_file}, label_list, file_type="parquet")
     tokenized_inputs = []
     SAMPLE_COUNT = 10
     # print(len(dataset["test"]))

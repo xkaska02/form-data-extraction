@@ -1,6 +1,3 @@
-"""Train langugage model
-"""
-    
 import argparse
 from transformers import BertTokenizerFast
 from create_dataset import create_dataset
@@ -8,6 +5,7 @@ from transformers import DataCollatorForTokenClassification
 import evaluate
 import numpy as np
 from transformers import BertForTokenClassification, TrainingArguments, Trainer
+from datasets import load_dataset
 
 def parse_args():
     parser = argparse.ArgumentParser(prog="train", description="train model")
@@ -36,12 +34,21 @@ def parse_args():
 def main(args):
     # print(tokenized_inputs.tokens())
     # label_list = ["O", "NUMBER_IN_ADDR", "GEOGRAPHICAL_NAME", "INSTITUTION", "MEDIA", "NUMBER_EXPRESSION", "ARTIFACT_NAME", "PERSONAL_NAME", "TIME_EXPRESSION"]
-    label_list = args.label_list
-    if args.train_file and args.test_file:
-        dataset = create_dataset({"train":args.train_file, "test":args.test_file}, label_list, file_type=args.file_type)
-    # print(dataset["train"][0])
-    elif args.train_folder and args.test_folder:
-        dataset = create_dataset({"train": f"{args.train_folder}/*.json","test": f"{args.test_folder}"},args.label_list, args.file_type, field="form")
+    # label_list = args.label_list
+    # if args.train_file and args.test_file:
+    #     dataset = create_dataset({"train":args.train_file, "test":args.test_file}, label_list, file_type=args.file_type)
+    # # print(dataset["train"][0])
+    # elif args.train_folder and args.test_folder:
+    #     dataset = create_dataset({"train": f"{args.train_folder}/*.json","test": f"{args.test_folder}/*.json"},args.label_list, args.file_type, field="form")
+    
+    
+
+    dataset = load_dataset("nielsr/funsd-iob-original")
+    label_list = dataset["train"].features["ner_tags"].feature.names
+    
+    # removing unnecessary columns
+    dataset = dataset.remove_columns(['image','bboxes','original_bboxes'])
+    
     
     tokenizer = BertTokenizerFast.from_pretrained(args.model_path)
     
@@ -58,12 +65,15 @@ def main(args):
                 new_labels.append(-100)
             else:
                 label = labels[word_id]
+                if label % 2 == 1:
+                    label += 1
                 new_labels.append(label)
         return new_labels
 
     def tokenize_and_align_labels(examples):
-        tokenized_inputs = tokenizer(examples["tokens"], truncation=True, padding=True, is_split_into_words=True)
-        
+        tokenized_inputs = tokenizer(examples["words"], truncation=True, padding=True, is_split_into_words=True)
+        # print(tokenized_inputs.word_ids(0))
+        # exit(0)
         all_labels = examples["ner_tags"]
         new_labels = []
         for i, labels, in enumerate(all_labels):
@@ -103,30 +113,27 @@ def main(args):
     
     id2label = {
         0: "O", 
-        1: "NUMBER_IN_ADDR", 
-        2: "GEOGRAPHICAL_NAME", 
-        3: "INSTITUTION", 
-        4: "MEDIA", 
-        5: "NUMBER_EXPRESSION", 
-        6: "ARTIFACT_NAME", 
-        7: "PERSONAL_NAME", 
-        8: "TIME_EXPRESSION"
+        1: "B-HEADER", 
+        2: "I-HEADER", 
+        3: "B-QUESTION",
+        4: "I-QUESTION",
+        5: "B-ANSWER",
+        6: "I-ANSWER"
     }
 
     label2id = {
-        "O": 0, 
-        "NUMBER_IN_ADDR": 1, 
-        "GEOGRAPHICAL_NAME": 2, 
-        "INSTITUTION": 3, 
-        "MEDIA": 4, 
-        "NUMBER_EXPRESSION": 5, 
-        "ARTIFACT_NAME": 6, 
-        "PERSONAL_NAME": 7, 
-        "TIME_EXPRESSION": 8
+        "O": 0,
+        "B-HEADER": 1,
+        "I-HEADER": 2,
+        "B-QUESTION": 3,
+        "I-QUESTION": 4,
+        "B-ANSWER": 5,
+        "I-ANSWER": 6
+        
     }
 
     model = BertForTokenClassification.from_pretrained(
-        args.model_path, num_labels = 9, id2label=id2label, label2id=label2id
+        args.model_path, num_labels = 7, id2label=id2label, label2id=label2id
     )
 
     training_args = TrainingArguments(
@@ -138,7 +145,9 @@ def main(args):
         weight_decay=args.decay,
         evaluation_strategy=args.eval_strat,
         save_strategy=args.save_strat,
-        load_best_model_at_end=True
+        load_best_model_at_end=True,
+        optim="adamw_torch"
+        # eval_accumulation_steps=1
    )
     
     trainer = Trainer(

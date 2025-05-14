@@ -1,10 +1,10 @@
 import argparse
-from transformers import BertTokenizerFast
+from transformers import BertTokenizerFast, RobertaTokenizerFast
 from create_dataset import create_dataset
 from transformers import DataCollatorForTokenClassification
 import evaluate
 import numpy as np
-from transformers import BertForTokenClassification, TrainingArguments, Trainer
+from transformers import BertForTokenClassification, TrainingArguments, Trainer, RobertaForTokenClassification
 from datasets import load_dataset, DatasetDict
 from dotenv import load_dotenv
 import os
@@ -12,7 +12,7 @@ import wandb
 from utils import generate_model_name
 from transformers import EarlyStoppingCallback
 import json
-from transformers import BertPreTrainedModel, BertModel
+from transformers import BertPreTrainedModel, BertModel, RobertaModel
 from transformers.modeling_outputs import TokenClassifierOutput
 import torch.nn as nn
 import torch
@@ -39,6 +39,8 @@ def parse_args():
     parser.add_argument("--experiment_name", default="test_project")
     parser.add_argument("--loss_on_subtokens", default=False, type=lambda x: x.lower() == "true", help="if false subtokens will have -100 category and be ignored")
     
+    parser.add_argument("--model_type", default="bert", help="set model type")
+    
     args = parser.parse_args()
     return args
 
@@ -62,6 +64,22 @@ class BertForTokenClassification2layer(BertForTokenClassification):
         
         # self.forward = BertForTokenClassification.forward
 
+class RobertaForTokenClassification2layer(RobertaForTokenClassification):
+    def __init__(self, config):
+        super().__init__(config)
+        self.num_labels=config.num_labels
+        self.roberta = RobertaModel(config, add_pooling_layer=False)
+        self.dropout = nn.Dropout(config.hidden_dropout_prob)
+        
+        self.classifier = nn.Sequential(
+            nn.Linear(config.hidden_size, config.hidden_size),
+            nn.ReLU(),
+            nn.Dropout(config.hidden_dropout_prob),
+            nn.Linear(config.hidden_size, config.num_labels)
+        )
+        
+        self.post_init()
+
 class BertForTokenClassification3layer(BertForTokenClassification):
     def __init__(self, config):
         super().__init__(config)
@@ -70,6 +88,25 @@ class BertForTokenClassification3layer(BertForTokenClassification):
         self.dropout = nn.Dropout(config.hidden_dropout_prob)
         
         # classifier head
+        self.classifier = nn.Sequential(
+            nn.Linear(config.hidden_size, config.hidden_size),
+            nn.ReLU(),
+            nn.Dropout(config.hidden_dropout_prob),
+            nn.Linear(config.hidden_size, config.hidden_size),
+            nn.ReLU(),
+            nn.Dropout(config.hidden_dropout_prob),
+            nn.Linear(config.hidden_size, config.num_labels)
+        )
+        
+        self.post_init()
+
+class RobertaForTokenClassification3layer(RobertaForTokenClassification):
+    def __init__(self, config):
+        super().__init__(config)
+        self.num_labels = config.num_labels
+        self.roberta = RobertaModel(config, add_pooling_layer=False)
+        self.dropout = nn.Dropout(config.hidden_dropout_prob)
+        
         self.classifier = nn.Sequential(
             nn.Linear(config.hidden_size, config.hidden_size),
             nn.ReLU(),
@@ -100,10 +137,10 @@ def main(args):
 
     label_list = ["O","B-key","B-information","B-name","B-rank","B-birth_date","B-nationality","B-death_date","B-funeral_date","B-grave_location","B-grave_id","B-information_source","B-death_book"]
     
-
-    
-    
-    tokenizer = BertTokenizerFast.from_pretrained(args.model_path)
+    if args.model_type == "bert":
+        tokenizer = BertTokenizerFast.from_pretrained(args.model_path)
+    elif args.model_type == "roberta":
+        tokenizer = RobertaTokenizerFast.from_pretrained(args.model_path, add_prefix_space=True)
     
 
     def align_labels_with_tokens(labels, word_ids):
@@ -199,20 +236,35 @@ def main(args):
             "B-information_source":11,
             "B-death_book":12,
     }
-
-    if int(args.classifier_head_layers) == 1:
-        model = BertForTokenClassification.from_pretrained(
-            args.model_path, num_labels = 13, id2label=id2label, label2id=label2id
-        )
-    elif int(args.classifier_head_layers) == 2:
-        model = BertForTokenClassification2layer.from_pretrained(
-            args.model_path, num_labels = 13, id2label=id2label, label2id=label2id
-        )
-    elif int(args.classifier_head_layers) == 3:
-        model = BertForTokenClassification3layer.from_pretrained(
-            args.model_path, num_labels = 13, id2label=id2label, label2id=label2id
-        )
     
+    model_type = args.model_type
+    
+    if model_type == "bert":
+        if int(args.classifier_head_layers) == 1:
+            model = BertForTokenClassification.from_pretrained(
+                args.model_path, num_labels = 13, id2label=id2label, label2id=label2id
+            )
+        elif int(args.classifier_head_layers) == 2:
+            model = BertForTokenClassification2layer.from_pretrained(
+                args.model_path, num_labels = 13, id2label=id2label, label2id=label2id
+            )
+        elif int(args.classifier_head_layers) == 3:
+            model = BertForTokenClassification3layer.from_pretrained(
+                args.model_path, num_labels = 13, id2label=id2label, label2id=label2id
+            )
+    elif model_type == "roberta":
+        if int(args.classifier_head_layers) == 1:
+            model = RobertaForTokenClassification.from_pretrained(
+                args.model_path, num_labels = 13, id2label=id2label, label2id=label2id
+            )
+        elif int(args.classifier_head_layers) == 2:
+            model = RobertaForTokenClassification2layer.from_pretrained(
+                args.model_path, num_labels = 13, id2label=id2label, label2id=label2id
+            )
+        elif int(args.classifier_head_layers) == 3:
+            model = RobertaForTokenClassification3layer.from_pretrained(
+                args.model_path, num_labels = 13, id2label=id2label, label2id=label2id
+            )
     
     if args.save_path:
         save_path = args.save_path
@@ -232,7 +284,7 @@ def main(args):
         weight_decay=args.decay,
         eval_strategy=args.eval_strat,
         save_strategy=args.save_strat,
-        load_best_model_at_end=True,
+        # load_best_model_at_end=True,
         optim="adamw_torch",
         report_to="wandb",
         metric_for_best_model="eval_loss"
