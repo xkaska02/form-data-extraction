@@ -271,8 +271,6 @@ def main(args):
     def get_eval_dataloader(self, eval_dataset = None):
       return eval_dataloader
 
-  # test model to cpu idk
-  #model.to("cpu")
 
   # Initialize our Trainer
   trainer = CustomTrainer(

@@ -146,7 +146,7 @@ for a in annotations:
     
     json_object = json.dumps(results)
     
-    with open("data_files/forms_json_dataset/dataset_int_bboxes.json","w") as file:
+    with open("data_files/forms_json_dataset/dataset.json","w") as file:
         file.write(json_object)
 
     

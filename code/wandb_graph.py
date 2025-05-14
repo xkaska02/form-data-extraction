@@ -38,8 +38,9 @@ import matplotlib.pyplot as plt
 # plt.savefig("best_model_comparison.pdf", format="pdf")
 # plt.show()
 
-csv_path = "czert_loss_subtokens.csv"
+csv_path = "wandb_data/czert_loss_subtokens.csv"
 df = pd.read_csv(csv_path)
+out_file = csv_path.replace("wandb_data","graphs")
 out_file = csv_path.replace("csv","pdf")
 # out_file = "best_model_comparison.pdf"
 
