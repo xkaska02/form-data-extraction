@@ -1,0 +1,7 @@
+models_tmp/
+__pycache__
+data_files
+venv
+.env
+wandb/
+out/
