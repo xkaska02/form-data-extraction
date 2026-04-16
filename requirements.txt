@@ -45,7 +45,7 @@ nvidia-nvjitlink-cu12==12.6.85
 nvidia-nvtx-cu12==12.6.77
 packaging==25.0
 pandas==2.2.3
-pillow==12.1.1
+pillow==12.2.0
 platformdirs==4.3.8
 propcache==0.3.1
 protobuf==6.33.5
